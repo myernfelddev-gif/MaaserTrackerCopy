@@ -1,6 +1,29 @@
 
 const BASE_URL = 'https://www.instaback.ai/project/cb0cc019-c9b4-4383-890a-37b43ec8e5ca';
 
+export const dashboardService = {
+  getDashboardData: async (userId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      await fetch(`${BASE_URL}/api/edge-function/o_getuserdashboarddata`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          userId: userId,
+          startDate: "",
+          endDate: ""
+        }),
+      });
+    } catch (err) {
+      // "Do nothing with the response" - התעלמות משגיאות בהתאם להנחיות
+    }
+  }
+};
+
 export const authService = {
   register: async (data: any) => {
     try {
@@ -21,7 +44,7 @@ export const authService = {
       const result = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(result?.message || result?.error || `Registration failed (${response.status})`);
+        throw new Error(result?.message || result?.error || `ההרשמה נכשלה (${response.status})`);
       }
       return result;
     } catch (err: any) {
@@ -47,7 +70,10 @@ export const authService = {
       const result = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(result?.message || result?.error || `Login failed (${response.status})`);
+        if (response.status === 401 || result?.message === 'Invalid email or password') {
+          throw new Error('אימייל או סיסמה לא נכונים. יש לוודא שנרשמת קודם לכן.');
+        }
+        throw new Error(result?.message || result?.error || `ההתחברות נכשלה (${response.status})`);
       }
       return result;
     } catch (err: any) {

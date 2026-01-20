@@ -1,16 +1,25 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, User, LogOut, Calendar } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, logout } from '../../store';
 import BottomNav from '../BottomNav';
 import Header from './Header';
+import { dashboardService } from '../../services/api';
 
 const Layout: React.FC<{ children?: React.ReactNode }> = () => {
   const location = useLocation();
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, userId } = useSelector((state: RootState) => state.auth);
+  const { dateFilter } = useSelector((state: RootState) => state.ui);
+
+  // Trigger dashboard data call on login or filter change
+  useEffect(() => {
+    if (userId) {
+      dashboardService.getDashboardData(userId);
+    }
+  }, [userId, dateFilter]);
 
   const menuItems = [
     { path: '/', label: 'לוח בקרה', icon: <LayoutDashboard size={20} /> },

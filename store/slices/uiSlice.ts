@@ -16,6 +16,7 @@ const uiSlice = createSlice({
   reducers: {
     setDateFilter: (state, action: PayloadAction<DateFilterState>) => {
       state.dateFilter = action.payload;
+      console.log(state.dateFilter);
     }
   }
 });

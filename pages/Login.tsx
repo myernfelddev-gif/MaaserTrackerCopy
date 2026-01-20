@@ -19,17 +19,6 @@ const Login: React.FC = () => {
   const loginMutation = useMutation({
     mutationFn: (data: any) => authService.login(data),
     onSuccess: (data) => {
-      /**
-       * מבנה התגובה הצפוי מה-API:
-       * {
-       *   "token": "<JWT_TOKEN>",
-       *   "user": {
-       *     "id": "<USER_ID>",
-       *     "username": "<USERNAME>",
-       *     ...
-       *   }
-       * }
-       */
       const { token, user } = data;
 
       if (token && user) {
@@ -38,9 +27,8 @@ const Login: React.FC = () => {
           userId: user.id,
           user: {
             id: user.id,
-            username: user.username,
-            name: user.username, // הצגת שם המשתמש במקום שבו מוצג ה-name במערכת
-            email: user.email || '' // שמירה על עקביות עם טיפוס המשתמש
+            name: user.username,
+            email: user.email
           }
         }));
         navigate('/');
@@ -162,7 +150,7 @@ const Login: React.FC = () => {
                     minLength: { value: 2, message: 'לפחות 2 תווים' } 
                   })}
                   type="password" 
-                  placeholder="••••••••"
+                  placeholder="••••"
                   className={`w-full pr-12 pl-5 py-3 bg-slate-50 border rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold ${errors.password ? 'border-red-300' : 'border-slate-100'}`}
                 />
               </div>
