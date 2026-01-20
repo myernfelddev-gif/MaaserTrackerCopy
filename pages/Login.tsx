@@ -6,15 +6,24 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { login as setLoginState } from '../store';
 import { authService } from '../services/api';
-import { Calendar, Mail, Lock, ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, Mail, Lock, ArrowLeft, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  // Fix: Adding firstName and lastName to defaultValues to fix TS errors in register() and errors object
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: 'myernfeld2@gmail.com',
+      password: '1234'
+    }
+  });
 
   const loginMutation = useMutation({
     mutationFn: (data: any) => authService.login(data),
@@ -132,6 +141,7 @@ const Login: React.FC = () => {
                   })}
                   type="email" 
                   placeholder="name@example.com"
+                  
                   className={`w-full pr-12 pl-5 py-3 bg-slate-50 border rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold ${errors.email ? 'border-red-300' : 'border-slate-100'}`}
                 />
               </div>
@@ -149,10 +159,18 @@ const Login: React.FC = () => {
                     required: 'שדה חובה', 
                     minLength: { value: 2, message: 'לפחות 2 תווים' } 
                   })}
-                  type="password" 
+                  type={showPassword ? 'text' : 'password'} 
                   placeholder="••••"
-                  className={`w-full pr-12 pl-5 py-3 bg-slate-50 border rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold ${errors.password ? 'border-red-300' : 'border-slate-100'}`}
+                  
+                  className={`w-full pr-12 pl-12 py-3 bg-slate-50 border rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold ${errors.password ? 'border-red-300' : 'border-slate-100'}`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password && <p className="text-[10px] text-red-500 font-bold px-1">{errors.password.message as string}</p>}
             </div>
