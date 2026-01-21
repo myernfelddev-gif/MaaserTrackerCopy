@@ -1,9 +1,14 @@
 
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, Heart, Wallet, Calculator, ArrowUpRight, Plus, Minus, Gift } from 'lucide-react';
+import { TrendingUp, TrendingDown, Heart, Plus, Minus, Gift, Loader2 } from 'lucide-react';
 import StatCard from '../components/StatCard';
+import SummaryCard from '../components/SummaryCard';
 import TransactionModal from '../components/TransactionModal';
 import { TransactionType } from '../types';
+import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { dashboardService } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const [modalState, setModalState] = useState<{ isOpen: boolean, type: TransactionType | null }>({
@@ -11,22 +16,48 @@ const Dashboard: React.FC = () => {
     type: null
   });
 
+  const { userId } = useSelector((state: RootState) => state.auth);
+  const { dateFilter } = useSelector((state: RootState) => state.ui);
+
+  // Fetch dashboard data from API
+  const { data: dashboardResponse, isLoading } = useQuery({
+    queryKey: ['dashboard', userId, dateFilter],
+    queryFn: () => dashboardService.getDashboardData(
+      userId || '', 
+      dateFilter.startDate || '', 
+      dateFilter.endDate || ''
+    ),
+    enabled: !!userId,
+  });
+
   const openModal = (type: TransactionType) => setModalState({ isOpen: true, type });
   const closeModal = () => setModalState({ isOpen: false, type: null });
 
-  // Mock data for display
+  // Extract dashboard data from the specified path: result.data.dashboard
+  const apiDashboard = dashboardResponse?.data?.dashboard;
+
+  // Map API fields correctly to dashboard UI fields
   const summary = {
-    totalIncome: 150000,
-    totalExpenses: 45000,
-    totalDonations: 8500,
-    netProfit: 105000,
-    requiredTithe: 10500,
-    balance: -2000 // negative means debt (needs to donate)
+    totalIncome: apiDashboard?.totalIncoms || 0,
+    totalExpenses: apiDashboard?.totalExpense || 0,
+    totalDonations: apiDashboard?.totalDonation || 0,
+    netProfit: apiDashboard?.netProfit || 0,
+    requiredTithe: apiDashboard?.requiredTithe || 0,
+    titheBalance: apiDashboard?.titheBalance || 0
   };
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400 gap-4">
+        <Loader2 size={48} className="animate-spin text-blue-500" />
+        <p className="font-bold text-lg">טוען נתונים מהשרת...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -59,6 +90,12 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* New SummaryCard replacing 3 StatCards */}
+        <SummaryCard 
+          netProfit={summary.netProfit}
+          requiredTithe={summary.requiredTithe}
+          titheBalance={summary.titheBalance}
+        />
         <StatCard 
           label="סה״כ הכנסות" 
           value={formatCurrency(summary.totalIncome)} 
@@ -77,32 +114,15 @@ const Dashboard: React.FC = () => {
           icon={<Heart size={24} />} 
           color="blue" 
         />
-        <StatCard 
-          label="רווח נקי" 
-          value={formatCurrency(summary.netProfit)} 
-          icon={<Wallet size={24} />} 
-          color="indigo" 
-        />
-        <StatCard 
-          label="חובת מעשר (10%)" 
-          value={formatCurrency(summary.requiredTithe)} 
-          icon={<Calculator size={24} />} 
-          color="amber" 
-        />
-        <StatCard 
-          label="יתרת מעשר נוכחית" 
-          value={formatCurrency(Math.abs(summary.balance))} 
-          icon={<ArrowUpRight size={24} className={summary.balance < 0 ? 'rotate-90' : ''} />} 
-          color={summary.balance < 0 ? 'amber' : 'green'} 
-          description={summary.balance < 0 ? 'יתרה לתרומה' : 'תרומת יתר'}
-        />
+        
+        
       </div>
 
       <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
         <h2 className="text-xl font-bold text-slate-800 mb-6">טיפ לניהול מעשרות</h2>
         <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
           <div className="p-3 bg-blue-100 text-blue-600 rounded-full shrink-0">
-            <Calculator size={20} />
+            <Heart size={20} />
           </div>
           <p className="text-blue-800 text-sm leading-relaxed">
             חישוב המעשר מתבצע על בסיס הרווח הנקי שלך (הכנסות פחות הוצאות). 

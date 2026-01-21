@@ -2,10 +2,10 @@
 const BASE_URL = 'https://www.instaback.ai/project/cb0cc019-c9b4-4383-890a-37b43ec8e5ca';
 
 export const dashboardService = {
-  getDashboardData: async (userId: string) => {
+  getDashboardData: async (userId: string, startDate: string = "", endDate: string = "") => {
     try {
       const token = localStorage.getItem('auth_token');
-      await fetch(`${BASE_URL}/api/edge-function/o_getuserdashboarddata`, {
+      const response = await fetch(`${BASE_URL}/api/edge-function/o_getuserdashboarddata`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -14,12 +14,18 @@ export const dashboardService = {
         },
         body: JSON.stringify({
           userId: userId,
-          startDate: "",
-          endDate: ""
+          startDate: startDate,
+          endDate: endDate
         }),
       });
+      
+      const result = await response.json();
+      // שמירה על התנהגות קיימת של הדפסה לקונסול
+      console.log('Dashboard data response:', result);
+      return result;
     } catch (err) {
-      // "Do nothing with the response" - התעלמות משגיאות בהתאם להנחיות
+      console.error('Dashboard API error:', err);
+      throw err;
     }
   }
 };

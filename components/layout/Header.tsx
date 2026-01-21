@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Calendar, LogOut, Settings2 } from 'lucide-react';
+import { Calendar, Settings2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, logout, setDateFilter } from '../../store';
+import { RootState, setDateFilter } from '../../store';
 import { DateFilterState } from '../../types';
 import { getDisplayLabel } from './dateUtils';
 import DateModal from './DateModal';
@@ -60,14 +61,7 @@ const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Logout Button */}
-          <button 
-            onClick={() => dispatch(logout())} 
-            className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all shadow-sm md:shadow-none"
-            title="התנתקות"
-          >
-            <LogOut size={20} />
-          </button>
+          {/* Action buttons area */}
         </div>
       </div>
     </header>
