@@ -30,6 +30,29 @@ export const dashboardService = {
   }
 };
 
+export const groupService = {
+  fetchUserGroupsWithProjects: async (userId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${BASE_URL}/api/edge-function/o_fetch_user_groups_with_projects`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({params: { userId} }),
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      console.error('Fetch groups API error:', err);
+      throw err;
+    }
+  }
+};
+
 export const authService = {
   register: async (data: any) => {
     try {
