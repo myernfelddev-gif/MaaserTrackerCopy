@@ -118,8 +118,8 @@ const Header: React.FC = () => {
             />
           </div>
 
-          {/* Quick Settings Action */}
-          <button className="hidden lg:flex p-4 text-slate-400 hover:text-blue-600 hover:bg-white hover:border-blue-200 border border-slate-200 rounded-2xl transition-all hover:shadow-md active:scale-95">
+          {/* Quick Settings Action - Now visible on Tablet (md+) */}
+          <button className="hidden md:flex p-4 text-slate-400 hover:text-blue-600 hover:bg-white hover:border-blue-200 border border-slate-200 rounded-2xl transition-all hover:shadow-md active:scale-95">
             <Activity size={22} />
           </button>
         </div>

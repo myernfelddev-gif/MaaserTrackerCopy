@@ -10,11 +10,9 @@ interface SummaryCardProps {
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ netProfit, requiredTithe, titheBalance }) => {
   // Normalize values: Round to 2 decimal places to match standard currency display.
-  // This prevents tiny floating point residues (e.g. -0.000001) from triggering a "debt" state.
   const normalizedBalance = Math.round(titheBalance * 100) / 100;
 
   const formatCurrency = (val: number) => {
-    // Ensure we don't display "-0.00 ₪" for values that round to zero
     const cleanVal = Math.abs(val) < 0.005 ? 0 : val;
     return new Intl.NumberFormat('he-IL', { 
       style: 'currency', 
@@ -25,7 +23,6 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ netProfit, requiredTithe, tit
   };
 
   const getStatusConfig = () => {
-    // Use the normalized balance for status evaluation
     if (normalizedBalance < 0) {
       return {
         bg: 'bg-red-50',
@@ -55,7 +52,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ netProfit, requiredTithe, tit
   const status = getStatusConfig();
 
   return (
-    <div className={`col-span-1 md:col-span-2 lg:col-span-3 rounded-[2.5rem] border-2 ${status.border} ${status.bg} p-8 shadow-sm transition-all hover:shadow-md`}>
+    <div className={`col-span-1 md:col-span-3 rounded-[2.5rem] border-2 ${status.border} ${status.bg} p-8 shadow-sm transition-all hover:shadow-md`}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
@@ -78,7 +75,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ netProfit, requiredTithe, tit
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-        {/* Separators for desktop */}
+        {/* Separators for md+ (Tablet/Desktop) */}
         <div className="hidden md:block absolute top-1/2 left-1/3 w-px h-12 bg-slate-200 -translate-y-1/2"></div>
         <div className="hidden md:block absolute top-1/2 left-2/3 w-px h-12 bg-slate-200 -translate-y-1/2"></div>
 

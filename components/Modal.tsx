@@ -19,6 +19,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, maxWidt
     } else {
       document.body.style.overflow = 'unset';
     }
+
+    // פונקציית ניקוי (Cleanup) שמבטיחה שחרור הגלילה בעת הסרת הרכיב מהמסך
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {

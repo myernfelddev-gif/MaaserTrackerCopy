@@ -28,8 +28,8 @@ const Layout: React.FC<{ children?: React.ReactNode }> = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-['Assistant']" dir="rtl">
-      {/* Sidebar - Desktop Only (Always Open) */}
-      <aside className="hidden lg:flex flex-col w-72 bg-white border-l border-slate-100 shadow-sm sticky top-0 h-screen z-40">
+      {/* Sidebar - Desktop & Tablet (md+) (Always Open) */}
+      <aside className="hidden md:flex flex-col w-72 bg-white border-l border-slate-100 shadow-sm sticky top-0 h-screen z-40">
         <div className="p-8">
           <h1 className="text-2xl font-black text-blue-600 flex items-center gap-2 tracking-tight">
             <span>מעשרות</span>
@@ -85,12 +85,12 @@ const Layout: React.FC<{ children?: React.ReactNode }> = () => {
         <Header />
 
         {/* Page Content */}
-        <main className="p-6 md:p-10 flex-1 pb-32 lg:pb-10">
+        <main className="p-6 md:p-10 flex-1 pb-32 md:pb-10">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation (Hidden on md+) */}
       <BottomNav />
     </div>
   );

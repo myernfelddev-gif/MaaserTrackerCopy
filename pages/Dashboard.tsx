@@ -89,8 +89,8 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* New SummaryCard replacing 3 StatCards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* SummaryCard now fills all 3 columns on Tablet/Desktop (md+) */}
         <SummaryCard 
           netProfit={summary.netProfit}
           requiredTithe={summary.requiredTithe}
@@ -114,8 +114,6 @@ const Dashboard: React.FC = () => {
           icon={<Heart size={24} />} 
           color="blue" 
         />
-        
-        
       </div>
 
       <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
