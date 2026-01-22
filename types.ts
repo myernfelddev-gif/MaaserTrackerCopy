@@ -1,4 +1,3 @@
-
 export enum TransactionType {
   INCOME = 'INCOME',
   EXPENSE = 'EXPENSE',
@@ -39,7 +38,7 @@ export interface Transaction {
   amount: number;
   date: string;
   title: string;
-  notes?: string;
+  description?: string;
   groupId?: string;
   projectId?: string;
 }

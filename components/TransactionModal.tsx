@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from './Modal';
@@ -46,7 +45,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
         title: defaultTitle,
         amount: '',
         date: new Date().toISOString().split('T')[0],
-        notes: '',
+        description: '',
         groupId: '',
         projectId: ''
       });
@@ -236,7 +235,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
             הערות נוספות
           </label>
           <textarea 
-            {...register('notes')}
+            {...register('description')}
             disabled={noGroupsAvailable && isFinancial}
             className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none h-28 resize-none transition-all font-medium text-slate-600 placeholder:text-slate-300 disabled:opacity-50"
             placeholder="פרטים נוספים שיעזרו לך לזכור את הפעולה..."
