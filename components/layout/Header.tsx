@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Calendar, Settings2, ChevronDown, Activity } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, setDateFilter } from '../../store';
-import { DateFilterState } from '../../types';
+import { DateFilterState } from '../../types/index';
 import { getDisplayLabel } from './dateUtils';
 import DateModal from './DateModal';
 

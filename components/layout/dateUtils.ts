@@ -1,4 +1,4 @@
-import { DateFilterState, DateFilterType } from '../../types';
+import { DateFilterState, DateFilterType } from '../../types/index';
 
 export const months = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',

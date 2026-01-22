@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from './Modal';
-import { TransactionType } from '../types';
+import { TransactionType } from '../types/index';
 import { Banknote, Calendar as CalendarIcon, Tag, AlignLeft, LayoutGrid, Layers, Loader2, AlertCircle } from 'lucide-react';
 import { groupService } from '../services/api';
 import { useSelector } from 'react-redux';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DateFilterState, DateFilterType } from '../../types';
+import { DateFilterState, DateFilterType } from '../../types/index';
 import { months, years, currentYear } from './dateUtils';
 import { Calendar, Check, X } from 'lucide-react';
 

@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Heart, Plus, Minus, Gift, Loader2 } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import SummaryCard from '../components/SummaryCard';
 import TransactionModal from '../components/TransactionModal';
-import { TransactionType } from '../types';
+import { TransactionType } from '../types/index';
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
