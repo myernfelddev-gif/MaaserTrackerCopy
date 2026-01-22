@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
@@ -11,6 +10,7 @@ import Groups from './pages/Groups';
 import GroupProjects from './pages/GroupProjects';
 import ProjectDetails from './pages/ProjectDetails';
 import Login from './pages/Login';
+import ActivityLog from './pages/ActivityLog';
 
 // Components
 import Layout from './components/layout/Layout';
@@ -41,6 +41,7 @@ const App: React.FC = () => {
               <Route path="groups" element={<Groups />} />
               <Route path="groups/:groupId" element={<GroupProjects />} />
               <Route path="projects/:projectId" element={<ProjectDetails />} />
+              <Route path="activity-log" element={<ActivityLog />} />
             </Route>
           </Routes>
         </Router>

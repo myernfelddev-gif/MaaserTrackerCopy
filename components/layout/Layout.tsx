@@ -1,7 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, User, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, User, LogOut, Calendar, History } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, logout } from '../../store';
 import BottomNav from '../BottomNav';
@@ -24,6 +23,7 @@ const Layout: React.FC<{ children?: React.ReactNode }> = () => {
   const menuItems = [
     { path: '/', label: 'לוח בקרה', icon: <LayoutDashboard size={20} /> },
     { path: '/groups', label: 'קבוצות ופרויקטים', icon: <Users size={20} /> },
+    { path: '/activity-log', label: 'יומן פעולות', icon: <History size={20} /> },
   ];
 
   return (
