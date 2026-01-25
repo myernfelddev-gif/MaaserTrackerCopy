@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FolderOpen, MoreVertical, ChevronLeft } from 'lucide-react';
+import { FolderOpen, MoreVertical, ChevronLeft, ArrowUpRight, ArrowDownRight, Target, Calculator, Wallet } from 'lucide-react';
 import { Group } from '../types/index';
 
 interface GroupCardProps {
@@ -10,43 +10,78 @@ interface GroupCardProps {
 }
 
 const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency }) => {
-console.log(group)
   return (
     <div 
       onClick={onClick}
-      className="group bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all cursor-pointer relative overflow-hidden"
+      className="group relative bg-white rounded-3xl p-8 border border-slate-200 hover:border-blue-400 transition-all duration-300 cursor-pointer flex flex-col shadow-sm"
     >
-      <div className="flex justify-between items-start mb-6">
-        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
-          <FolderOpen size={24} />
+      {/* Header: Identity & Actions */}
+      <div className="flex justify-between items-start mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-2xl transition-colors border border-slate-100">
+            <FolderOpen size={22} />
+          </div>
+          <div>
+            <h3 className="text-xl font-extrabold text-slate-900 tracking-tight mb-0.5">{group.name}</h3>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <Target size={10} />
+                {group.activeProjects} פרויקטים
+              </span>
+            </div>
+          </div>
         </div>
-        <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+          onClick={(e) => { e.stopPropagation(); }}
+        >
           <MoreVertical size={20} />
         </button>
       </div>
 
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-slate-800 mb-1">{group.name}</h3>
-        <p className="text-slate-500 text-sm">{group.description}</p>
+      {/* Hero Metric: Net Profit */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-slate-400 mb-1">
+          <Wallet size={14} />
+          <span className="text-[11px] font-black uppercase tracking-widest">רווח נקי כולל</span>
+        </div>
+        <p className="text-4xl font-black text-slate-900 tracking-tighter">
+          {formatCurrency(group.netProfit)}
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-slate-50 p-3 rounded-2xl">
-          <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">פרויקטים פעילים</p>
-          <p className="font-extrabold text-slate-700">{group.activeProjects}</p>
+      {/* Financial Split: Income & Expenses */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="p-4 rounded-2xl bg-emerald-50/30 border border-emerald-100/50">
+          <div className="flex items-center gap-1.5 text-emerald-600 mb-1">
+            <ArrowUpRight size={14} strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-wider">הכנסות</span>
+          </div>
+          <p className="text-lg font-bold text-slate-800">{formatCurrency(group.totalIncome)}</p>
         </div>
-        <div className="bg-blue-50 p-3 rounded-2xl">
-          <p className="text-[10px] uppercase font-bold text-blue-400 mb-1">מעשר מצטבר</p>
-          <p className="font-extrabold text-blue-700">{formatCurrency(group.titheDue)}</p>
+
+        <div className="p-4 rounded-2xl bg-rose-50/30 border border-rose-100/50">
+          <div className="flex items-center gap-1.5 text-rose-600 mb-1">
+            <ArrowDownRight size={14} strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-wider">הוצאות</span>
+          </div>
+          <p className="text-lg font-bold text-slate-800">{formatCurrency(group.totalExpenses)}</p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-slate-50 text-slate-400 text-sm font-semibold">
-        <div className="flex items-center gap-2">
-          <span>רווח נקי:</span>
-          <span className="text-slate-700">{formatCurrency(group.netProfit)}</span>
+      {/* Secondary Metric: Tithe */}
+      <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl">
+            <Calculator size={18} />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">חובת מעשר מצטבר</p>
+            <p className="text-lg font-black text-blue-700 leading-none">{formatCurrency(group.titheDue)}</p>
+          </div>
         </div>
-        <ChevronLeft size={18} className="text-blue-500 group-hover:translate-x-[-4px] transition-transform" />
+
+       
       </div>
     </div>
   );
