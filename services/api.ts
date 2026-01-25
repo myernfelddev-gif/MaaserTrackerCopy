@@ -53,6 +53,43 @@ export const groupService = {
   }
 };
 
+export const transactionService = {
+  addFinancialTransaction: async (payload: any) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/FinancialTransaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw { status: response.status, data: errorData };
+    }
+    return response.json();
+  },
+  addDonation: async (payload: any) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/Donations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw { status: response.status, data: errorData };
+    }
+    return response.json();
+  }
+};
+
 export const authService = {
   register: async (data: any) => {
     try {

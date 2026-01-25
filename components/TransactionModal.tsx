@@ -1,12 +1,14 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from './Modal';
 import { TransactionType } from '../types/index';
 import { Banknote, Calendar as CalendarIcon, Tag, AlignLeft, LayoutGrid, Layers, Loader2, AlertCircle } from 'lucide-react';
-import { groupService } from '../services/api';
+import { groupService, transactionService } from '../services/api';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { checkIsFinancial, getTransactionTitle, getTransactionColorClasses } from '../utils/transactions/transactionModal.utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -28,6 +30,7 @@ interface ApiGroup {
 const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, type }) => {
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
   const { userId } = useSelector((state: RootState) => state.auth);
+  const queryClient = useQueryClient();
   
   const [groups, setGroups] = useState<ApiGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +79,44 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
     }
   }, [isOpen, userId, type, isFinancial]);
 
+  const mutation = useMutation({
+    mutationFn: async (formData: any) => {
+      if (type === TransactionType.DONATION) {
+        const payload = {
+          amount: parseFloat(formData.amount),
+          donation_date: formData.date,
+          title: formData.title,
+          description: formData.description || "",
+          isRecurring: true,
+          userId: userId
+        };
+        return transactionService.addDonation(payload);
+      } else {
+        const payload = {
+          transaction_type: type === TransactionType.INCOME ? "income" : "expense",
+          amount: parseFloat(formData.amount),
+          transaction_date: formData.date,
+          title: formData.title,
+          description: formData.description || "",
+          isRecurring: true,
+          projectId: formData.projectId,
+          groupId: formData.groupId,
+          userId: userId
+        };
+        return transactionService.addFinancialTransaction(payload);
+      }
+    },
+    onSuccess: (data) => {
+      console.log('API Success:', data);
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      reset();
+      onClose();
+    },
+    onError: (error: any) => {
+      console.error('API Submission Error:', error);
+    }
+  });
+
   // Watch the groupId field to filter projects dynamically
   const selectedGroupId = watch('groupId');
   
@@ -87,11 +128,11 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
 
   const onSubmit = (data: any) => {
     console.log('Transaction added:', { ...data, type });
-    reset();
-    onClose();
+    mutation.mutate(data);
   };
 
   const noGroupsAvailable = isFinancial && !isLoading && groups.length === 0;
+  const isSubmitting = mutation.isPending;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={getTransactionTitle(type)} maxWidth="max-w-xl">
@@ -121,7 +162,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
                 <div className="relative">
                   <select 
                     {...register('groupId', { required: isFinancial })}
-                    disabled={isLoading || noGroupsAvailable}
+                    disabled={isLoading || noGroupsAvailable || isSubmitting}
                     className={`w-full px-4 py-3 bg-slate-50 border ${errors.groupId ? 'border-red-300' : 'border-slate-100'} rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 appearance-none disabled:opacity-50`}
                   >
                     <option value="">{isLoading ? 'טוען קבוצות...' : 'בחר קבוצה...'}</option>
@@ -143,10 +184,10 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
                 </label>
                 <select 
                   {...register('projectId', { required: isFinancial })}
-                  disabled={!selectedGroupId || isLoading || noGroupsAvailable}
+                  disabled={!selectedGroupId || isLoading || noGroupsAvailable || isSubmitting}
                   className={`
                     w-full px-4 py-3 bg-slate-50 border ${errors.projectId ? 'border-red-300' : 'border-slate-100'} rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold 
-                    ${(!selectedGroupId || isLoading || noGroupsAvailable) ? 'text-slate-400 cursor-not-allowed opacity-60' : 'text-slate-700'}
+                    ${(!selectedGroupId || isLoading || noGroupsAvailable || isSubmitting) ? 'text-slate-400 cursor-not-allowed opacity-60' : 'text-slate-700'}
                   `}
                 >
                   {!selectedGroupId ? (
@@ -176,7 +217,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
                 type="number"
                 
                 step="0.01"
-                disabled={noGroupsAvailable && isFinancial}
+                disabled={(noGroupsAvailable && isFinancial) || isSubmitting}
                 {...register('amount', { 
                   required: true, 
                   min: 0.01 // Ensures only positive numbers
@@ -196,7 +237,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
             </label>
             <input 
               type="date"
-              disabled={noGroupsAvailable && isFinancial}
+              disabled={(noGroupsAvailable && isFinancial) || isSubmitting}
               {...register('date', { required: true })}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 disabled:opacity-50"
             />
@@ -210,7 +251,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
           </label>
           <input 
             type="text"
-            disabled={noGroupsAvailable && isFinancial}
+            disabled={(noGroupsAvailable && isFinancial) || isSubmitting}
             {...register('title', { required: true })}
             className={`w-full px-5 py-3 bg-slate-50 border ${errors.title ? 'border-red-300' : 'border-slate-100'} rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 disabled:opacity-50`}
             placeholder="לדוגמה: תשלום עבור ייעוץ..."
@@ -224,7 +265,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
           </label>
           <textarea 
             {...register('description')}
-            disabled={noGroupsAvailable && isFinancial}
+            disabled={(noGroupsAvailable && isFinancial) || isSubmitting}
             className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none h-28 resize-none transition-all font-medium text-slate-600 placeholder:text-slate-300 disabled:opacity-50"
             placeholder="פרטים נוספים שיעזרו לך לזכור את הפעולה..."
           />
@@ -234,19 +275,20 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 py-4 px-6 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="flex-1 py-4 px-6 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all active:scale-[0.98] disabled:opacity-50"
             >
               ביטול
             </button>
             <button 
               type="submit"
-              disabled={isLoading || (noGroupsAvailable && isFinancial)}
+              disabled={isLoading || isSubmitting || (noGroupsAvailable && isFinancial)}
               className={`
                 flex-[2] py-4 px-6 rounded-2xl font-black text-white transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed
                 ${getTransactionColorClasses(type)}
               `}
             >
-              {isLoading ? 'טוען...' : 'שמירת פעולה'}
+              {isSubmitting ? 'שומר...' : (isLoading ? 'טוען...' : 'שמירת פעולה')}
             </button>
         </div>
       </form>
