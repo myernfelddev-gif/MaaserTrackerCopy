@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users } from 'lucide-react';
+import { LayoutDashboard, Users, History } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
@@ -9,6 +9,7 @@ const BottomNav: React.FC = () => {
   const navItems = [
     { path: '/', label: 'לוח בקרה', icon: <LayoutDashboard size={20} /> },
     { path: '/groups', label: 'קבוצות', icon: <Users size={20} /> },
+     { path: '/activity-log', label: 'יומן פעולות', icon: <History size={20} /> },
   ];
 
   return (

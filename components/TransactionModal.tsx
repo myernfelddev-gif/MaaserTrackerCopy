@@ -6,6 +6,7 @@ import { Banknote, Calendar as CalendarIcon, Tag, AlignLeft, LayoutGrid, Layers,
 import { groupService } from '../services/api';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { checkIsFinancial, getTransactionTitle, getTransactionColorClasses } from '../utils/transactions/transactionModal.utils';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const isFinancial = type === TransactionType.INCOME || type === TransactionType.EXPENSE;
+  const isFinancial = checkIsFinancial(type);
 
   // Set default values when modal opens or type changes
   useEffect(() => {
@@ -84,30 +85,16 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
     return selectedGroup?.projects || [];
   }, [selectedGroupId, groups]);
 
-  const getTitle = () => {
-    switch (type) {
-      case TransactionType.INCOME: return 'הוספת הכנסה חדשה';
-      case TransactionType.EXPENSE: return 'תיעוד הוצאה';
-      case TransactionType.DONATION: return 'תיעוד תרומה (מעשר)';
-    }
-  };
-
   const onSubmit = (data: any) => {
     console.log('Transaction added:', { ...data, type });
     reset();
     onClose();
   };
 
-  const colorClasses = {
-    [TransactionType.INCOME]: 'bg-green-600 hover:bg-green-700 shadow-green-100',
-    [TransactionType.EXPENSE]: 'bg-red-600 hover:bg-red-700 shadow-red-100',
-    [TransactionType.DONATION]: 'bg-blue-600 hover:bg-blue-700 shadow-blue-100',
-  };
-
   const noGroupsAvailable = isFinancial && !isLoading && groups.length === 0;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={getTitle()} maxWidth="max-w-xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={getTransactionTitle(type)} maxWidth="max-w-xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {isFinancial && (
           <>
@@ -255,7 +242,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
               disabled={isLoading || (noGroupsAvailable && isFinancial)}
               className={`
                 flex-[2] py-4 px-6 rounded-2xl font-black text-white transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed
-                ${colorClasses[type]}
+                ${getTransactionColorClasses(type)}
               `}
             >
               {isLoading ? 'טוען...' : 'שמירת פעולה'}
