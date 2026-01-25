@@ -81,7 +81,10 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
           </div>
         </div>
 
-       
+        <div className="flex items-center gap-1.5 text-blue-600 font-black text-sm group-hover:gap-3 transition-all">
+          <span>ניהול</span>
+          <ChevronLeft size={18} strokeWidth={3} />
+        </div>
       </div>
     </div>
   );
