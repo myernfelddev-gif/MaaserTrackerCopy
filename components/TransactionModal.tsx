@@ -174,6 +174,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, ty
             <div className="relative">
               <input 
                 type="number"
+                
                 step="0.01"
                 disabled={noGroupsAvailable && isFinancial}
                 {...register('amount', { 
