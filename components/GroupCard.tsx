@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { FolderOpen, MoreVertical, ChevronLeft, ArrowUpRight, ArrowDownRight, Target, Calculator, Wallet } from 'lucide-react';
+import React, { useState } from 'react';
+import { FolderOpen, MoreVertical, ChevronLeft, ArrowUpRight, ArrowDownRight, Target, Calculator, Wallet, Edit2, Trash2 } from 'lucide-react';
 import { Group } from '../types/group';
 
 interface GroupCardProps {
@@ -10,6 +10,19 @@ interface GroupCardProps {
 }
 
 const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency }) => {
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // No functionality as per request
+    setShowMenu(false);
+  };
+
   return (
     <div 
       onClick={onClick}
@@ -31,12 +44,44 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
             </div>
           </div>
         </div>
-        <button 
-          className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-          onClick={(e) => { e.stopPropagation(); }}
-        >
-          <MoreVertical size={20} />
-        </button>
+        
+        <div className="relative">
+          <button 
+            className={`p-2 transition-colors rounded-xl ${showMenu ? 'bg-slate-100 text-slate-600' : 'text-slate-300 hover:text-slate-600 hover:bg-slate-50'}`}
+            onClick={handleMenuToggle}
+          >
+            <MoreVertical size={20} />
+          </button>
+
+          {showMenu && (
+            <>
+              {/* Invisible backdrop to close menu */}
+              <div 
+                className="fixed inset-0 z-10" 
+                onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} 
+              />
+              <div 
+                className="absolute left-0 mt-2 w-36 bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-200/50 z-20 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200 origin-top-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button 
+                  onClick={handleActionClick}
+                  className="w-full px-4 py-2.5 text-right text-xs font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                >
+                  <Edit2 size={14} className="text-slate-400" />
+                  עריכה
+                </button>
+                <button 
+                  onClick={handleActionClick}
+                  className="w-full px-4 py-2.5 text-right text-xs font-black text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-slate-50"
+                >
+                  <Trash2 size={14} className="text-red-400" />
+                  מחיקה
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Hero Metric: Net Profit */}
