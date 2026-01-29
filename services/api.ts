@@ -76,6 +76,24 @@ export const groupService = {
       console.error('Get groups summary API error:', err);
       throw err;
     }
+  },
+
+  createGroup: async (payload: { name: string; description: string; userId: string }) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/Group`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw { status: response.status, data: errorData };
+    }
+    return response.json();
   }
 };
 

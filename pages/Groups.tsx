@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../components/Modal';
 import GroupCard from '../components/GroupCard';
 import { useForm } from 'react-hook-form';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, setGroups } from '../store';
 import { groupService } from '../services/api';
@@ -13,8 +13,9 @@ import { groupService } from '../services/api';
 const Groups: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const { userId } = useSelector((state: RootState) => state.auth);
   const { dateFilter } = useSelector((state: RootState) => state.ui);
@@ -35,10 +36,23 @@ const Groups: React.FC = () => {
     enabled: !!userId,
   });
 
+  const createGroupMutation = useMutation({
+    mutationFn: (data: { name: string; description: string; userId: string }) => 
+      groupService.createGroup(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupsSummary'] });
+      reset();
+      setIsModalOpen(false);
+    },
+  });
+
   const onSubmit = (data: any) => {
-    console.log('New group:', data);
-    reset();
-    setIsModalOpen(false);
+    if (!userId) return;
+    createGroupMutation.mutate({
+      name: data.name,
+      description: data.description,
+      userId: userId
+    });
   };
 
   const formatCurrency = (val: number) => {
@@ -99,27 +113,45 @@ const Groups: React.FC = () => {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="הוספת קבוצה חדשה">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {createGroupMutation.isError && (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-bold animate-in fade-in">
+              <AlertCircle size={18} />
+              <span>שגיאה ביצירת הקבוצה. ייתכן שהשם כבר קיים.</span>
+            </div>
+          )}
+          
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-500 uppercase px-1">שם הקבוצה</label>
             <input 
               {...register('name', { required: true })}
-              className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700"
+              disabled={createGroupMutation.isPending}
+              className={`w-full px-5 py-3 bg-slate-50 border ${errors.name ? 'border-red-300' : 'border-slate-100'} rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 disabled:opacity-50`}
               placeholder="לדוגמה: עסק המזון שלי"
             />
+            {errors.name && <p className="text-[10px] text-red-500 font-bold px-1">יש להזין שם קבוצה</p>}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-500 uppercase px-1">תיאור</label>
             <textarea 
               {...register('description')}
-              className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none h-32 resize-none transition-all font-medium text-slate-600"
+              disabled={createGroupMutation.isPending}
+              className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none h-32 resize-none transition-all font-medium text-slate-600 disabled:opacity-50"
               placeholder="תאר בקצרה את הפעילות..."
             />
           </div>
           <button 
             type="submit"
-            className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
+            disabled={createGroupMutation.isPending}
+            className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            צור קבוצה
+            {createGroupMutation.isPending ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                יוצר קבוצה...
+              </>
+            ) : (
+              'צור קבוצה'
+            )}
           </button>
         </form>
       </Modal>
