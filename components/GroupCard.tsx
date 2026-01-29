@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FolderOpen, MoreVertical, ChevronLeft, ArrowUpRight, ArrowDownRight, Target, Calculator, Wallet } from 'lucide-react';
-import { Group } from '../types/index';
+import { Group } from '../types/group';
 
 interface GroupCardProps {
   group: Group;
@@ -26,7 +26,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 <Target size={10} />
-                {group.activeProjects} פרויקטים
+                {group.projectCount} פרויקטים
               </span>
             </div>
           </div>
@@ -65,7 +65,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
             <ArrowDownRight size={14} strokeWidth={3} />
             <span className="text-[10px] font-black uppercase tracking-wider">הוצאות</span>
           </div>
-          <p className="text-lg font-bold text-slate-800">{formatCurrency(group.totalExpenses)}</p>
+          <p className="text-lg font-bold text-slate-800">{formatCurrency(group.totalExpense)}</p>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">חובת מעשר מצטבר</p>
-            <p className="text-lg font-black text-blue-700 leading-none">{formatCurrency(group.titheDue)}</p>
+            <p className="text-lg font-black text-blue-700 leading-none">{formatCurrency(group.requiredTithe)}</p>
           </div>
         </div>
 

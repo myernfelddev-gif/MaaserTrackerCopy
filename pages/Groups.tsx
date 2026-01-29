@@ -1,40 +1,39 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../components/Modal';
 import GroupCard from '../components/GroupCard';
 import { useForm } from 'react-hook-form';
-import { Group } from '../types/index';
+import { useQuery } from '@tanstack/react-query';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, setGroups } from '../store';
+import { groupService } from '../services/api';
 
 const Groups: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
-  // Mock groups data
-  const groups: Group[] = [
-    { 
-      id: '1', 
-      name: 'שיווק דיגיטלי', 
-      description: 'פעילות שיווק, לידים ופרסום ממומן', 
-      activeProjects: 3,
-      totalIncome: 120000,
-      totalExpenses: 35000,
-      netProfit: 85000,
-      titheDue: 8500
+  const { userId } = useSelector((state: RootState) => state.auth);
+  const { dateFilter } = useSelector((state: RootState) => state.ui);
+  const groupsFromRedux = useSelector((state: RootState) => state.groups.groups);
+
+  const { isLoading, error } = useQuery({
+    queryKey: ['groupsSummary', userId, dateFilter],
+    queryFn: async () => {
+      const response = await groupService.getGroupsSummary(
+        userId || '',
+        dateFilter.startDate || '',
+        dateFilter.endDate || ''
+      );
+      const data = response?.data || [];
+      dispatch(setGroups(data));
+      return data;
     },
-    { 
-      id: '2', 
-      name: 'נדל״ן להשקעה', 
-      description: 'ניהול נכסים והכנסות משכירות', 
-      activeProjects: 1,
-      totalIncome: 45000,
-      totalExpenses: 12000,
-      netProfit: 33000,
-      titheDue: 3300
-    },
-  ];
+    enabled: !!userId,
+  });
 
   const onSubmit = (data: any) => {
     console.log('New group:', data);
@@ -46,23 +45,49 @@ const Groups: React.FC = () => {
     return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(val);
   };
 
+  if (isLoading && groupsFromRedux.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400 gap-4">
+        <Loader2 size={48} className="animate-spin text-blue-500" />
+        <p className="font-bold text-lg">טוען קבוצות מהשרת...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">קבוצות</h1>
-          <p className="text-slate-500">ניהול קטגוריות הפעילות שלך</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">קבוצות</h1>
+          <p className="text-slate-500 font-medium">ניהול קטגוריות הפעילות והמאזן הפיננסי שלך</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95"
         >
           <Plus size={20} /> קבוצה חדשה
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {groups.map((group) => (
+      {error && (
+        <div className="p-6 bg-red-50 border border-red-100 rounded-[2rem] flex items-center gap-4 text-red-600 font-bold">
+          <AlertCircle size={24} />
+          <p>שגיאה בטעינת הנתונים. נא לנסות שוב מאוחר יותר.</p>
+        </div>
+      )}
+
+      {!isLoading && groupsFromRedux.length === 0 && !error && (
+        <div className="bg-white rounded-[2.5rem] p-16 border border-slate-100 border-dashed flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-6">
+            <Plus size={40} />
+          </div>
+          <h3 className="text-xl font-bold text-slate-800 mb-2">אין קבוצות עדיין</h3>
+          <p className="text-slate-500 max-w-sm">צור קבוצה חדשה כדי להתחיל לעקוב אחר ההכנסות, ההוצאות והמעשרות שלך.</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {groupsFromRedux.map((group) => (
           <GroupCard 
             key={group.id}
             group={group}
@@ -73,26 +98,26 @@ const Groups: React.FC = () => {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="הוספת קבוצה חדשה">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">שם הקבוצה</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-500 uppercase px-1">שם הקבוצה</label>
             <input 
               {...register('name', { required: true })}
-              className="w-full px-4 py-2 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-700"
               placeholder="לדוגמה: עסק המזון שלי"
             />
           </div>
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1">תיאור</label>
+          <div className="space-y-2">
+            <label className="text-xs font-black text-slate-500 uppercase px-1">תיאור</label>
             <textarea 
               {...register('description')}
-              className="w-full px-4 py-2 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
+              className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none h-32 resize-none transition-all font-medium text-slate-600"
               placeholder="תאר בקצרה את הפעילות..."
             />
           </div>
           <button 
             type="submit"
-            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all"
+            className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
           >
             צור קבוצה
           </button>

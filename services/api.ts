@@ -20,7 +20,6 @@ export const dashboardService = {
       });
       
       const result = await response.json();
-      // שמירה על התנהגות קיימת של הדפסה לקונסול
       console.log('Dashboard data response:', result);
       return result;
     } catch (err) {
@@ -48,6 +47,33 @@ export const groupService = {
       return result;
     } catch (err) {
       console.error('Fetch groups API error:', err);
+      throw err;
+    }
+  },
+
+  getGroupsSummary: async (userId: string, startDate: string = "", endDate: string = "") => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${BASE_URL}/api/edge-function/o_get_user_group_financial_summary`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          params: {
+            userId: userId,
+            startDate: startDate,
+            endDate: endDate
+          }
+        }),
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      console.error('Get groups summary API error:', err);
       throw err;
     }
   }
