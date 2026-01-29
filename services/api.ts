@@ -71,6 +71,7 @@ export const groupService = {
       });
       
       const result = await response.json();
+      
       return result;
     } catch (err) {
       console.error('Get groups summary API error:', err);
@@ -94,6 +95,40 @@ export const groupService = {
       throw { status: response.status, data: errorData };
     }
     return response.json();
+  },
+
+  updateGroup: async (id: string, payload: { name: string; description: string }) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/Group?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok || result.deleted === 0) {
+      throw new Error(result.message || 'שגיאה בעדכון הקבוצה');
+    }
+    return result;
+  },
+
+  deleteGroup: async (id: string) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/Group?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    const result = await response.json();
+    if (!response.ok || result.deleted === 0) {
+      throw new Error(result.message || 'שגיאה במחיקת הקבוצה');
+    }
+    return result;
   }
 };
 

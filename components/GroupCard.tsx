@@ -6,10 +6,12 @@ import { Group } from '../types/group';
 interface GroupCardProps {
   group: Group;
   onClick: () => void;
+  onEdit: (group: Group) => void;
+  onDelete: (group: Group) => void;
   formatCurrency: (val: number) => string;
 }
 
-const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency }) => {
+const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, onEdit, onDelete, formatCurrency }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   const handleMenuToggle = (e: React.MouseEvent) => {
@@ -17,9 +19,15 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
     setShowMenu(!showMenu);
   };
 
-  const handleActionClick = (e: React.MouseEvent) => {
+  const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // No functionality as per request
+    onEdit(group);
+    setShowMenu(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(group);
     setShowMenu(false);
   };
 
@@ -65,14 +73,14 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, formatCurrency })
                 onClick={(e) => e.stopPropagation()}
               >
                 <button 
-                  onClick={handleActionClick}
+                  onClick={handleEditClick}
                   className="w-full px-4 py-2.5 text-right text-xs font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors"
                 >
                   <Edit2 size={14} className="text-slate-400" />
                   עריכה
                 </button>
                 <button 
-                  onClick={handleActionClick}
+                  onClick={handleDeleteClick}
                   className="w-full px-4 py-2.5 text-right text-xs font-black text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-slate-50"
                 >
                   <Trash2 size={14} className="text-red-400" />
