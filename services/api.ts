@@ -132,6 +132,39 @@ export const groupService = {
   }
 };
 
+export const projectService = {
+  getGroupProjectsSummary: async (userId: string, groupId: string, startDate: string = "", endDate: string = "") => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${BASE_URL}/api/edge-function/o_get_group_projects_financial_summary`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          params: {
+            userId,
+            groupId,
+            startDate,
+            endDate
+          }
+        }),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.data?.message || result?.message || 'שגיאה בטעינת פרויקטים');
+      }
+      return result;
+    } catch (err) {
+      console.error('Get group projects summary API error:', err);
+      throw err;
+    }
+  }
+};
+
 export const transactionService = {
   addFinancialTransaction: async (payload: any) => {
     const token = localStorage.getItem('auth_token');

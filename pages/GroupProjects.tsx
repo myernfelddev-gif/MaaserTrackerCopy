@@ -1,9 +1,15 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, Layout, Trash2, Edit2, ChevronLeft } from 'lucide-react';
+import { Plus, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../components/Modal';
+import ProjectCard from '../components/ProjectCard';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { projectService } from '../services/api';
+import { GroupProjectsResponse } from '../types/project';
 
 const GroupProjects: React.FC = () => {
   const { groupId } = useParams();
@@ -11,30 +17,21 @@ const GroupProjects: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
-  // Mock group name based on ID
-  const groupName = groupId === '1' ? 'שיווק דיגיטלי' : 'נדל״ן להשקעה';
+  const { userId } = useSelector((state: RootState) => state.auth);
+  const { dateFilter } = useSelector((state: RootState) => state.ui);
+  
+  const startDate = dateFilter.startDate || '';
+  const endDate = dateFilter.endDate || '';
 
-  // Mock projects data
-  const projects = [
-    { 
-      id: '101', 
-      name: 'קמפיין חורף 2024', 
-      description: 'פרסום מוצרי הלבשה בגוגל ופייסבוק', 
-      totalIncome: 50000,
-      totalExpenses: 15000,
-      netProfit: 35000,
-      titheDue: 3500
+  // Fix: Extract data from result in queryFn to satisfy the GroupProjectsResponse type
+  const { data: response, isLoading, error } = useQuery<GroupProjectsResponse>({
+    queryKey: ['groupProjects', userId, groupId, startDate, endDate],
+    queryFn: async () => {
+      const result = await projectService.getGroupProjectsSummary(userId || '', groupId || '', startDate, endDate);
+      return result?.data;
     },
-    { 
-      id: '102', 
-      name: 'ייעוץ עסקי - חברת הייטק', 
-      description: 'ליווי שיווקי חודשי', 
-      totalIncome: 70000,
-      totalExpenses: 20000,
-      netProfit: 50000,
-      titheDue: 5000
-    },
-  ];
+    enabled: !!userId && !!groupId,
+  });
 
   const onSubmit = (data: any) => {
     console.log('New project:', data);
@@ -46,6 +43,29 @@ const GroupProjects: React.FC = () => {
     return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 gap-4">
+        <Loader2 size={40} className="animate-spin text-blue-500" />
+        <p className="font-bold">טוען פרויקטים...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 bg-red-50 border border-red-100 rounded-[2rem] flex flex-col items-center gap-4 text-red-600 text-center">
+        <AlertCircle size={40} />
+        <p className="font-bold">אירעה שגיאה בטעינת הפרויקטים</p>
+        <button onClick={() => navigate('/groups')} className="text-sm underline">חזרה לרשימת הקבוצות</button>
+      </div>
+    );
+  }
+
+  // Fix: response is now typed as GroupProjectsResponse, so we use it directly instead of accessing .data
+  const groupData = response || { groupName: 'טוען...', groupDescription: '', projects: [] };
+  const projects = groupData.projects || [];
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
@@ -56,8 +76,8 @@ const GroupProjects: React.FC = () => {
           <ArrowRight size={24} />
         </button>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">{groupName}</h1>
-          <p className="text-slate-500">ניהול פרויקטים תחת קבוצת {groupName}</p>
+          <h1 className="text-3xl font-extrabold text-slate-800">{groupData.groupName}</h1>
+          <p className="text-slate-500">{groupData.groupDescription || `ניהול פרויקטים תחת קבוצת ${groupData.groupName}`}</p>
         </div>
       </div>
 
@@ -70,49 +90,22 @@ const GroupProjects: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <div 
-            key={project.id}
-            onClick={() => navigate(`/projects/${project.id}`)}
-            className="group bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all cursor-pointer"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                <Layout size={20} />
-              </div>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                  <Edit2 size={16} />
-                </button>
-                <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-
-            <h3 className="text-lg font-bold text-slate-800 mb-1">{project.name}</h3>
-            <p className="text-slate-400 text-xs mb-6 line-clamp-2">{project.description}</p>
-
-            <div className="space-y-3 pt-4 border-t border-slate-50">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500">רווח נקי</span>
-                <span className="font-bold text-slate-800">{formatCurrency(project.netProfit)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500">מעשר</span>
-                <span className="font-bold text-blue-600">{formatCurrency(project.titheDue)}</span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <span className="text-blue-500 text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
-                לפרטי פרויקט <ChevronLeft size={14} />
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      {projects.length === 0 ? (
+        <div className="bg-white rounded-[2rem] p-12 border border-slate-100 border-dashed text-center">
+          <p className="text-slate-500 font-bold text-lg">אין פרויקטים בקבוצה זו עדיין</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onClick={() => navigate(`/projects/${project.id}`)}
+              formatCurrency={formatCurrency}
+            />
+          ))}
+        </div>
+      )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="הוספת פרויקט חדש">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
