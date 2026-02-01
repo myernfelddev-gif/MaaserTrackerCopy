@@ -6,10 +6,12 @@ import { Project } from '../types/project';
 interface ProjectCardProps {
   project: Project;
   onClick: () => void;
+  onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
   formatCurrency: (val: number) => string;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, formatCurrency }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, onEdit, onDelete, formatCurrency }) => {
   return (
     <div 
       onClick={onClick}
@@ -22,13 +24,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, formatCurre
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
             className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" 
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(project);
+            }}
           >
             <Edit2 size={16} />
           </button>
           <button 
             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg" 
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(project);
+            }}
           >
             <Trash2 size={16} />
           </button>

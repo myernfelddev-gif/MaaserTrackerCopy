@@ -162,6 +162,58 @@ export const projectService = {
       console.error('Get group projects summary API error:', err);
       throw err;
     }
+  },
+
+  createProject: async (payload: { name: string; description: string; groupId: string }) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/projects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw { status: response.status, data: errorData };
+    }
+    return response.json();
+  },
+
+  updateProject: async (id: string, payload: { name: string; description: string }) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/projects?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    if (!response.ok || result.deleted === 0) {
+      throw new Error(result.message || 'שגיאה בעדכון הפרויקט');
+    }
+    return result;
+  },
+
+  deleteProject: async (id: string) => {
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`${BASE_URL}/api/projects?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    const result = await response.json();
+    if (!response.ok || result.deleted === 0) {
+      throw new Error(result.message || 'שגיאה במחיקת הפרויקט');
+    }
+    return result;
   }
 };
 
