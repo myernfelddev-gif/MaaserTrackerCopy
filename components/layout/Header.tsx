@@ -6,12 +6,15 @@ import { RootState, setDateFilter } from '../../store';
 import { DateFilterState } from '../../types/index';
 import { getDisplayLabel } from './dateUtils';
 import DateModal from './DateModal';
+import DateModalV2 from './DateModalV2';
+import DateFilterPillV2 from './DateFilterPillV2';
 
 const Header: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { dateFilter } = useSelector((state: RootState) => state.ui);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isDateModalV2Open, setIsDateModalV2Open] = useState(false);
 
   const getPageInfo = () => {
     if (location.pathname === '/') {
@@ -45,6 +48,21 @@ const Header: React.FC = () => {
     setIsDateModalOpen(false);
   };
 
+  const handleConfirmDateV2 = (newFilter: DateFilterState) => {
+    dispatch(setDateFilter(newFilter));
+    setIsDateModalV2Open(false);
+  };
+
+  const toggleLegacyModal = () => {
+    setIsDateModalV2Open(false);
+    setIsDateModalOpen(!isDateModalOpen);
+  };
+
+  const toggleV2Modal = () => {
+    setIsDateModalOpen(false);
+    setIsDateModalV2Open(!isDateModalV2Open);
+  };
+
   return (
     <header className="sticky top-0 z-[60] h-[120px] flex items-center px-10 border-b border-slate-200/80 transition-all bg-white/70 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
       {/* Decorative Gradient Background */}
@@ -73,14 +91,14 @@ const Header: React.FC = () => {
         </div>
 
         {/* Action & Date Controls Section */}
-        <div className="flex items-center gap-6 animate-in fade-in slide-in-from-left-4 duration-500">
-          {/* Enhanced Date Selector */}
+        <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+          {/* Legacy Date Selector */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur opacity-0 group-hover:opacity-10 transition duration-500"></div>
             
             <button 
               id="date-trigger"
-              onClick={() => setIsDateModalOpen(true)}
+              onClick={toggleLegacyModal}
               className={`
                 relative flex items-center gap-4 px-6 py-3.5 rounded-2xl transition-all border
                 ${isDateModalOpen 
@@ -114,6 +132,22 @@ const Header: React.FC = () => {
               onClose={() => setIsDateModalOpen(false)}
               currentFilter={dateFilter}
               onConfirm={handleConfirmDate}
+            />
+          </div>
+
+          {/* New Date Selector V2 */}
+          <div className="relative">
+            <DateFilterPillV2 
+              onClick={toggleV2Modal}
+              isOpen={isDateModalV2Open}
+              dateFilter={dateFilter}
+            />
+            
+            <DateModalV2 
+              isOpen={isDateModalV2Open}
+              onClose={() => setIsDateModalV2Open(false)}
+              currentFilter={dateFilter}
+              onConfirm={handleConfirmDateV2}
             />
           </div>
 
